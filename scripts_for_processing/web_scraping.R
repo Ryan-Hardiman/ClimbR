@@ -1,11 +1,20 @@
 #Below we scrape tide data from seeker.gg
-Website <- read_html("https://seeker.gg/Tides") %>% html_table(fill=TRUE)%>% pluck(1) #Grabs the first table from Seeker.gg
+Website <- read_html("https://seeker.gg/Tides") |> html_table()#Grabs data from Seeker.gg
 
-Times <- (Website %>% pluck(2))[-1]%>% hm() #Gets second column of website and removes the first element, Gives the high and low tide times
+Today_Table <- Website |>
+  pluck(1) |>
+  Clean_Tide_Tables()    #Today data
+  
+Tomorrow_Table <- Website |>
+  pluck(2)|> 
+  Clean_Tide_Tables() |>
+  mutate(times = times + hours(24))   #Tomorrows data
 
-Tides <- gsub('.{1}$','',c((Website%>%pluck(3))[-1])) # removes the "m" from tide heights, Gives the high and low tide heights
+Tide_Table <- rbind(Today_Table , Tomorrow_Table)
 
-Tide_States <- ifelse(Website$Today[-1]=="\u25BE","l","h")# Finds the tide state
+
+
+
 
 Tide_Index<-match(min(abs(period_to_seconds(ClimbTime-Times))),abs(period_to_seconds(ClimbTime-Times))) #Finds the closest tide to when you are looking to climb
 
@@ -13,7 +22,5 @@ Tide_Index_Second<-match(min(abs(period_to_seconds(ClimbTime + ClimbDuration-Tim
 
 ifelse(Tide_Index-Tide_Index_Second>1,"Must use All Seasons", "OK") #Notic this check!!!
 
-Tide_Table <- data.frame(Time=Times, Tide=Tides, Tide_State=Tide_States) %>% mutate(Tide =  as.numeric(Tide))
-
-Tide_Season <- ifelse(max(Tide_Table$Tide)-min(Tide_Table$Tide)>6,"Spring","Neap") #Returns the Tide Season
+Tqde_Table <- data.frame(Time=Times, Tide=Tides, Tide_State=Tide_States) |> mutate(Tide =  as.numeric(Tide))
 

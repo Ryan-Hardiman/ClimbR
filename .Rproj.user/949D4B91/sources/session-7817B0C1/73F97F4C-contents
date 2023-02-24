@@ -1,3 +1,4 @@
+
 times <- tribble(
   ~time,  ~state,  ~height,
   0,   "low",        2,
@@ -7,6 +8,21 @@ times <- tribble(
   1,   "low",        1,
   1.25,  "high",        8
 )
+
+
+times <- tribble(
+  ~time,  ~state,  ~height,
+  0,     "high",    8,
+  0.25,   "low",    3,
+  0.5,    "high",   9,
+  0.75,  "low",     1,
+  1,     "high",    8,
+  1.25,  "low",     2
+)
+
+
+
+
 
 gen_points <- function(h1, h2, t1, t2, tstep = 0.01) {
   
@@ -22,14 +38,14 @@ gen_points <- function(h1, h2, t1, t2, tstep = 0.01) {
 
 
 data_to_points <- function(tide_times) {
-  tide_times %>%
+  tide_times |>
     mutate(next_time = lead(time),
            next_state = lead(state),
-           next_height = lead(height)) %>% 
-    filter(!is.na(next_time)) %>% 
+           next_height = lead(height)) |> 
+    filter(!is.na(next_time)) |> 
     mutate(points = pmap(list(height, next_height, time, next_time),
-                         gen_points)) %>% 
-    select(points) %>% unnest(points)
+                         gen_points)) |> 
+    select(points) |> unnest(points)
 }
 
 
@@ -39,14 +55,14 @@ points <- data_to_points(times)
 head(points)
 
 
-points %>%
+points |>
   ggplot(aes(x = t, y = h)) + 
   geom_line() +
   scale_y_continuous(breaks = -100:100, minor_breaks = FALSE) + 
   theme_bw()
 
 
-points %>%
+points |>
   ggplot(aes(x = t, y = h)) + 
   geom_hline(yintercept = 6) +
   geom_line() +

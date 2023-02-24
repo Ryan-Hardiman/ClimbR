@@ -3,7 +3,7 @@
     "path": "~/GitHub/Island_Climbing/Island Climbing.R",
     "project_path": "Island Climbing.R",
     "type": "r_source",
-    "hash": "0",
+    "hash": "135849723",
     "contents": "",
     "dirty": false,
     "created": 1669725632119.0,
@@ -12,16 +12,16 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "210,0",
-        "scrollLine": "181",
-        "ignored_words": "ShinyApp\n"
+        "cursorPosition": "5,36",
+        "scrollLine": "0",
+        "ignored_words": "ShinyApp,colour\n"
     },
     "folds": "",
-    "lastKnownWriteTime": 1670446426,
+    "lastKnownWriteTime": 1677245125,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1670446426540,
+    "last_content_update": 1677245125741,
     "read_only": false,
     "read_only_alternatives": []
 }
