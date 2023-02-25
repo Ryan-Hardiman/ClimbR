@@ -31,31 +31,31 @@ ui <- basicPage(
 ui <-fluidPage(
   # Input widgets
   fluidRow(
-    column(5,
-           conditionalPanel(condition="input.plot_tabs!='User guide'",
+    column(6,
+           conditionalPanel(condition="input.plot_tabs!='Front Page'",
                             tabsetPanel(id="ui_tab",
                                         tabPanel("Map",
-                                                 column(12,h4("Click a site"),withSpinner(leaflet::leafletOutput("map", height="600px"),size=2, color="#7c2599"))
+                                                 column(12,h5("Choose a Crag"),withSpinner(leaflet::leafletOutput("map", height="600px"),size=2, color="#7c2599"))
                                         ),
-                                        tabPanel("Table",
-                                                 column(12, h4("Click a site"), div(dataTableOutput("table_input"), style = "font-size:70%"))
+                                        tabPanel("Crag Climbs (when selected)",
+                                                 column(12, h5("Choose a Climb"), div(dataTableOutput("table_input"), style = "font-size:70%"))
                                         )
                             )
            ),
-           conditionalPanel(condition="input.plot_tabs=='User guide'",
+           conditionalPanel(condition="input.plot_tabs=='Front Page'",
                             column(12)
            )
     ),
-    column(7,tabsetPanel(id="plot_tabs",
+    column(6,tabsetPanel(id="plot_tabs",
                          
-                         tabPanel("Time series",
+                         tabPanel("Filters",
                                   fluidRow(column(8,
                                                   uiOutput("date_slider"),
                                                   radioButtons("ts_plot_type","Plot type:", choices=c("Heatmap", "Habitable width", "Water column exceedances"), inline=T),
                                                   conditionalPanel(condition="input.ts_plot_type=='Heatmap'",
                                                                    selectInput("heatmap_param",label="Heatmap parameter:", choices= heatmap_param_choices)
                                                   ),
-                                                  checkboxInput("show_dates", label="Show all profile dates", value=TRUE),
+                                                  checkboxInput("limit_tides", label="Limit by tide (requires start time & duration)", value=TRUE),
                                                   conditionalPanel(condition="input.ts_plot_type=='Heatmap'",
                                                                    plotOutput("heatmap")
                                                   ),
@@ -76,13 +76,14 @@ ui <-fluidPage(
                                     column(8,h4("Profile data"),div(dataTableOutput("profile_table"), style = "font-size:80%"))
                                   )
                          ),
-                         tabPanel("User guide",
+                         tabPanel("Front Page",
                                   fluidRow(
-                                    column(8,
-                                           includeMarkdown(paste0(here(),"/User guide.Rmd"))
+                                    column(12,
+                                           includeMarkdown(here("R","Front_Page.md"))
                                     )
                                   )
                          )
     ))
   )
 )
+

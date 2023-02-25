@@ -2,19 +2,18 @@ library(readxl) #used
 library(zoo) #used
 library(leaflet) #used
 library(tidyverse) #used
-library(lubridate)
+library(lubridate) #used
 library(rvest)#used
 library(here)#used
 library(viridis)#used to create the colour palette
-library(rsconnect)
 #Below are used for webdesign
 library(shiny) #used
 library(shinyWidgets) #used
 library(rsconnect)
 library(shinycssloaders)
 library(DT)
-library(rmarkdown)
-
+library(rmarkdown) #used
+library(magrittr)
 library(httr)
 library(jsonlite)
 
@@ -174,25 +173,6 @@ get_limit_table <- function(filtered_climb_list, tide_table, climb_time) {
 
 
 
-Check_Tide <- function(climb_list,tide_table, climb_start, climb_duration){
-  
- # climb_list |> mutate(height = 
- #                        season_and_state_height(
- #                          tide_table,
- #                          climb_start,
- #                          climb_duration,
- #                          `Tide Season` ,
- #                          `Tide Height`)
- #                                   )
-lookup <- wide_get_height(tide_table, climb_start, climb_duration)
-#step 1 is to add on the base 
-step1 <- climb_list |> group_by(`Tide Season`, `Tide Height`, `Hours to be inaccesible`) |>  mutate( height = map2(`Tide Season`,`Tide Height`, ~lookup |> select(paste(.y, .x, sep = "_")) %>% pluck(1))) %>% ungroup()
-
-step2 <- step1 |> group_by(`Tide Season`, `Tide Height`, `Hours to be inaccesible`) |> mutate(accesible = map(height, ~climbable_check(ClimbTime, ClimbDuration, points, .x)))
-  step2 %>% filter(accesible == TRUE)
-}
-
-
 
 
 
@@ -249,7 +229,7 @@ time <- get_closest_tide_change(tide_table, climb_time) |>
 height <- data_to_points(tide_table) |>
   filter(t == period_to_seconds(time$times) + period_to_seconds(hours_inaccessible)) |>
   select(h) |> 
-  pluck(1) |> 
+  pluck(1,1) |> 
   unique()
 
 height
@@ -310,6 +290,78 @@ season_and_state_height <- function(tide_table, climb_time,  duration, season, h
 #Pivoting wider in aim of speeding up the mutate? 
 wide_get_height <- function(tide_table, climb_time,  duration){
   get_height_limit(Tide_Table, ClimbTime, ClimbDuration)%>% pivot_wider(names_from = season, values_from = c(All, High, Low))
+}
+
+
+
+#Below is the major code that is used to generate the shiny plot of the filtered climbs
+
+#====
+Map_Gen <- function(area_name = NULL,
+                    climb_name = NULL,
+                    climb_grade = NULL,
+                    hardest_move = NULL,
+                    tide_season = NULL,
+                    tide_height = NULL,
+                    hours_innacessible = NULL,
+                    is_lead = NULL,
+                    is_seconded = NULL,
+                    limit_by_tide = NULL) {
+  FilterList <- Climbing_Filter(Name_Of_Area = area_name,
+                                Climb_Name = climb_name,
+                                Climb_Grade = climb_grade,
+                                Hardest_Move = hardest_move,
+                                Tide_Season = tide_season,
+                                Tide_Height = tide_height,
+                                Hours_Innacessible = hours_innacessible,
+                                Lead = is_lead,
+                                Seconded= is_seconded,
+                                limit_by_tide = limit_by_tide)
+  
+  FilteredList_Group_Counted <- Island_Climbing |> 
+    filter(row_number() %in% FilterList$id) |>
+    group_by(`Name Of Area`) |>
+    mutate(number = n()) |>
+    ungroup()
+  
+  #Creating a colour wheel with the number of distinct values for no. of climbs
+  MyColour <- viridis_pal(option = "C")(
+    nrow(unique(FilteredList_Group_Counted|> select(number)))
+  )
+  
+  FilteredList_Group_Counted <- merge(FilteredList_Group_Counted|> 
+                                        select(number) |> 
+                                        unique() |> 
+                                        arrange(number) |> 
+                                        mutate(id=row_number()),
+                                      FilteredList_Group_Counted,
+                                      by="number")
+  pal <- colorFactor(palette = MyColour, domain=FilteredList_Group_Counted$number)
+  
+  leaflet()|> 
+    addTiles()|> 
+    addCircles(data=
+                 FilteredList_Group_Counted,
+               lat = ~Latitide,
+               lng = ~Longitude,
+               radius =
+                 5*1.02^FilteredList_Group_Counted$number,
+               fillOpacity = 1,
+               popup = FilteredList_Group_Counted$`Name Of Area`,
+               color = "black",
+               #fillColor = "white",
+               fillColor = MyColour[FilteredList_Group_Counted$id],
+               weight = 0.0001+1.02^FilteredList_Group_Counted$number,
+               opacity = 0.9,
+               stroke=TRUE,
+    )|> 
+    addLegend("bottomright",
+              pal = pal,
+              values = unique(FilteredList_Group_Counted$number),
+              title = "# Of Climbs",
+              labFormat = labelFormat(prefix = ""),
+              opacity = 1
+             )
 }
 
 

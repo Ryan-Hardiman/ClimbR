@@ -3,106 +3,18 @@ library(readr)
 library(here)
 Island_Climbing<-read_rds(paste0(here(),"/data/Island_Climbing.rds"))
 source(here("R","functions.R"))
-source(here("R","old_data_editing_code.R"))
+#source(here("R","old_data_editing_code.R"))
 
 #Desired climb time
-ClimbTime <- hm("06:00")
-ClimbDuration <- hm("2:00")
+ClimbTime <- hm("36:00")
+ClimbDuration <- hm("4:00")
 source(here("R","web_scraping.R"))
 source(here("R","tide_function.R"))
 #source(here("R","app_build.R"))#<--- Used for ShinyApp later on when this all works
 
 
-
-
-
-# Code to enter lead or second climb and date
-Add_Lead <- function(ClimbName, ClimbDate){
-  Island_Climbing$Lead[Island_Climbing$`Climb Name`==ClimbName] <- "Y"
-  
-  Island_Climbing$Date_Lead[Island_Climbing$`Climb Name`==ClimbName] <- ClimbDate
-}
-
-Add_Second <- function(ClimbName, ClimbDate){
-  Island_Climbing$`2nd`[Island_Climbing$`Climb Name`==ClimbName] <- "Y"
-  
-  Island_Climbing$Date_Seconded[Island_Climbing$`Climb Name`==ClimbName] <- ClimbDate
-}
-
-
-
-
-
-#====
-Map_Gen <- function(area_name = NULL,
-                    climb_name = NULL,
-                    climb_grade = NULL,
-                    hardest_move = NULL,
-                    tide_season = NULL,
-                    tide_height = NULL,
-                    hours_innacessible = NULL,
-                    is_lead = NULL,
-                    is_seconded = NULL,
-                    limit_by_tide = NULL) {
-  FilterList <- Climbing_Filter(Name_Of_Area = area_name,
-                                Climb_Name = climb_name,
-                                Climb_Grade = climb_grade,
-                                Hardest_Move = hardest_move,
-                                Tide_Season = tide_season,
-                                Tide_Height = tide_height,
-                                Hours_Innacessible = hours_innacessible,
-                                Lead = is_lead,
-                                Seconded= is_seconded,
-                                limit_by_tide = limit_by_tide)
-
-  FilteredList_Group_Counted <- Island_Climbing |> 
-    filter(row_number() %in% FilterList$id) |>
-    group_by(`Name Of Area`) |>
-    mutate(number = n()) |>
-    ungroup()
-                                                   
-  #Creating a colour wheel with the number of distinct values for no. of climbs
- MyColour <- viridis_pal(option = "C")(
-   nrow(unique(FilteredList_Group_Counted|> select(number)))
-   )
- 
- FilteredList_Group_Counted <- merge(FilteredList_Group_Counted|> 
-                                       select(number) |> 
-                                       unique() |> 
-                                       arrange(number) |> 
-                                       mutate(id=row_number()),
-                                     FilteredList_Group_Counted,
-                                     by="number")
- pal <- colorFactor(palette = MyColour, domain=FilteredList_Group_Counted$number)
- 
- leaflet()|> 
-   addTiles()|> 
-   addCircles(data=
-                FilteredList_Group_Counted,
-              lat = ~Latitide,
-              lng = ~Longitude,
-              radius =
-                5*1.02^FilteredList_Group_Counted$number,
-              fillOpacity = 1,
-              popup = FilteredList_Group_Counted$`Name Of Area`,
-              color = "black",
-              #fillColor = "white",
-              fillColor = MyColour[FilteredList_Group_Counted$id],
-              weight = 0.0001+1.02^FilteredList_Group_Counted$number,
-              opacity = 0.9,
-              stroke=TRUE,
-   )|> 
-   addLegend("bottomright",
-             pal = pal,
-             values = unique(FilteredList_Group_Counted$number),
-             title = "# Of Climbs",
-             labFormat = labelFormat(prefix = ""),
-             opacity = 1)
-}
-
-
-
-#Need to adjust the height column so that it matches the maximum accessible (not the max value).
+#Below is an example run of the map function which filters for climbs in the E2 difficulty range and ones that are not underwater!
+Map_Gen(climb_grade = c("E2", "E3"), limit_by_tide = 1) #as long as limit_by_tide != NULL it filters underwater climbs out
 
 
 
@@ -114,26 +26,6 @@ Map_Gen <- function(area_name = NULL,
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# if neap and low then for spring choose 1h after mid point of tide times (tide moving down)
-# if neap and high then for spring choose 1h after mid-point of tide times (tide moving upwards)
-
-#If spring high , allow all neap tides
-#If spring low, disallow all neap tides
 
 
 
@@ -151,9 +43,7 @@ converted_content <- content(raw_results,as="text")
  
 converted_json <- fromJSON(converted_content)
 
-ClimbTime + ClimbDuration
 
-as.period(c(ClimbTime, Climbtime + ClimbDuration))
 
 
 
@@ -169,6 +59,15 @@ server <- function(input, output, session) {
   
   # Load data
   read_rds(paste0(here(),"/data/Island_Climbing.rds"))
+  
+  map = leaflet::createLeafletMap(session, 'map')
+  
+  session$onFlushed(once = T, function(){
+    output$map <- leaflet::renderLeaflet(
+      Map_Gen()
+    )
+    
+  })
   
   
   }
