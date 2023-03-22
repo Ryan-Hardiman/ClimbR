@@ -201,7 +201,6 @@ climbable_check <- function(climb_start, climb_duration, tide_height_df, height_
     pluck("TRUE")
   
   if(is.null(check)){FALSE} else if(check != nrow(real_times_and_heights(climb_start, climb_duration, tide_height_df))){FALSE} else{TRUE}
- #if_else(is.null(check) ,"FALSE", if_else( check != nrow(real_times_and_heights(climb_start, climb_duration, tide_height_df)),  "FALSE", "TRUE"))
 }
 
 
@@ -236,26 +235,6 @@ height
 }
 
 
-#get_height_limit <- function(tide_table, climb_time,  hours_inaccessible){
-#  
-#  high_base <- get_base_height_limit(tide_table, climb_time, "h", hours_inaccessible)
-#  
-#  low_base <- get_base_height_limit(tide_table, climb_time, "l", hours_inaccessible)
-#  
-#  spring <- tribble(~Low,~High, ~season,
-#                      if(tide_table$season |> pluck(1) =="Spring"){low_base}else(low_base-2.5),
-#                      if(tide_table$season |> pluck(1) == "Spring"){high_base}else(high_base+2.5),
-#                      "Spring")
-#  neap <- tribble(~Low,~High, ~season,
-#                     if(tide_table$season  |> pluck(1) == "Neap"){low_base}else(low_base+2.5),
-#                     if(tide_table$season  |> pluck(1) == "Neap"){high_base}else(high_base-2.5),
-#                     "Neap")
-#  
-#  all <- tribble(~Low,~High, ~season,neap$Low, spring$High, "All")
-#  
-#  output <- rbind(spring, neap, all) |> mutate(All = -1)
-#  output
-#}
 
 
 get_height_limit <- function(tide_table, climb_time,  hours_inaccessible, unique_season_height){

@@ -1,0 +1,26 @@
+{
+    "id": "0D158571",
+    "path": "~/GitHub/Island_Climbing/R/tide_function.r",
+    "project_path": "R/tide_function.r",
+    "type": "r_source",
+    "hash": "1837499943",
+    "contents": "",
+    "dirty": false,
+    "created": 1679508162406.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "32,0",
+        "scrollLine": "17"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1679508999,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1679508999385,
+    "read_only": false,
+    "read_only_alternatives": []
+}
