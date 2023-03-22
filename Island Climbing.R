@@ -6,15 +6,15 @@ source(here("R","functions.R"))
 #source(here("R","old_data_editing_code.R"))
 
 #Desired climb time
-ClimbTime <- hm("36:00")
-ClimbDuration <- hm("4:00")
+ClimbTime <- hm("32:00")
+ClimbDuration <- hm("2:00")
 source(here("R","web_scraping.R"))
 source(here("R","tide_function.R"))
 #source(here("R","app_build.R"))#<--- Used for ShinyApp later on when this all works
 
 
 #Below is an example run of the map function which filters for climbs in the E2 difficulty range and ones that are not underwater!
-Map_Gen(climb_grade = c("E2", "E3"), limit_by_tide = 1) #as long as limit_by_tide != NULL it filters underwater climbs out
+Map_Gen(climb_grade = c("E2"), limit_by_tide = 1) #as long as limit_by_tide != NULL it filters underwater climbs out
 
 
 
