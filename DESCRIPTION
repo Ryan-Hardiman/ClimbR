@@ -1,0 +1,11 @@
+Package: islandclimbing
+Title: Shiny App To Accompany Guernsey Trad Book
+Version: 0.0.0.9000
+Authors@R: 
+    c(person("Ryan", "Hardiman", , "first.last@example.com", role = c("aut", "cre")),
+      person("Michael", "Jones", role = c("aut")))
+Description: This package provides a shiny app to accompoany the book, Guernsey Trad, by James Burton
+License: pending
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.0
