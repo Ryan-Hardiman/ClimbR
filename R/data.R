@@ -22,4 +22,4 @@
 #' }
 #' @md
 #' @source(*Guernsey Trad* book)
-island_climbing <- function() {}
+island_climbing
