@@ -15,10 +15,10 @@
 #'   \item{tide_height}{Level of tide for which the climb is accessible}
 #'   \item{hours_to_be_inaccessible}{Number of hours that the climb is not
 #'   accessible due to water.}
-#'   \item{overall_grade_1}{}
-#'   \item{overall_grade_2}{}
-#'   \item{hardest_move_1}{}
-#'   \item{hardest_move_1}{}
+#'   \item{overall_grade_1}{Left hand side of E grading system}
+#'   \item{overall_grade_2}{Right hand side -if exists- of E grading system}
+#'   \item{hardest_move_1}{Left hand side -if exists- of french grading system}
+#'   \item{hardest_move_1}{Right hand side -if exists- of french grading system}
 #' }
 #' @md
 #' @source(*Guernsey Trad* book)
