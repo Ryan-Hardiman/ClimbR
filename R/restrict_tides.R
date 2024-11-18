@@ -42,8 +42,8 @@ restrict_tides <- function(
   
   
   
-  df <- island_climbing %>% 
-    filter(
+  df <- island_climbing |>
+    dplyr::filter(
       name_of_area %==% noa &
         climb_name %==% cn &
         overall_grade_1 %==% og1 &
