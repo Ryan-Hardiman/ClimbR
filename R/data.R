@@ -18,8 +18,8 @@
 #'   \item{overall_grade_1}{Left hand side of E grading system}
 #'   \item{overall_grade_2}{Right hand side -if exists- of E grading system}
 #'   \item{hardest_move_1}{Left hand side -if exists- of french grading system}
-#'   \item{hardest_move_1}{Right hand side -if exists- of french grading system}
+#'   \item{hardest_move_2}{Right hand side -if exists- of french grading system}
 #' }
 #' @md
 #' @source(*Guernsey Trad* book)
-island_climbing
+#island_climbing
