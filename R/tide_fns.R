@@ -7,7 +7,7 @@
 get_tides <- function(){
   rvest::read_html("https://seeker.gg/Tides") |>
     rvest::html_table() |>
-    pluck(1)|>
+    purrr::pluck(1)|>
     purrr::set_names(c("dir","time","height"))|>
     dplyr::filter(!dir =="")|>
     dplyr::mutate(
@@ -66,5 +66,56 @@ interpolate_tides <- function(tide_data, time_step = 60) {
   )
 }
 
+
+#' Filter Data Frame by Tide Conditions
+#'
+#' Filters a data frame of climbing routes based on tide conditions at a specified start time and duration.
+#' The function checks tide data, interpolates the tide heights over time, and determines whether the tide
+#' is within the acceptable range for climbing, filtering out any routes that are inaccessible based on tide
+#' height and season.
+#'
+#' @param df A tibble or data frame containing the climbing routes data. It must have the following columns:
+#'   - `tide_season`: Season of tide conditions (e.g., "All", "Spring").
+#'   - `tide_heights`: Tide state (e.g., "Low", "High").
+#' @param start_time Numeric value representing the start time for the climbing session in seconds.
+#' @param duration Numeric value representing the duration of the climbing session in seconds.
+#'
+#' @return A filtered tibble or data frame containing only the climbing routes that are accessible during the
+#'   specified time frame, based on tide conditions.
+#'
+#' @examples
+#' # Assuming `df` is a tibble containing climbing route information
+#' filtered_df <- filter_df_by_tide(df, start_time = 16250, duration = 3600)
+#'
+#' @import dplyr
+#' @export
+filter_df_by_tide <- function(df, start_time, duration){
+  tides <- get_tides()
+  
+  future_tides <- tides |>
+    interpolate_points() |>
+    dplyr::mutate(
+      season = ifelse(height >= 3 & height <=6.5, "All", "Spring"),
+      state = dplyr::case_when(
+        season == "Spring" & height <= 3 ~ "Low",
+        season == "Spring" & height >= 6.5 ~ "High",
+        season == "All" & height <= 4.5 ~ "Low",
+        season == "All" & height >= 4.5 ~ "High",
+        TRUE ~ "All"
+      )
+    ) |>
+    dplyr::filter(
+      time * 3600 >= start_time,
+      time * 3600 <= start_time + duration
+    )
+  
+  season_present <- future_tides |> dplyr::pull(season) |> unique()
+  state_present <- future_tides |> dplyr::pull(state) |> unique()
+  
+  df |> dplyr::filter(
+    tide_season %in% c("All", season_present),
+    tide_heights %in% c("All", "High", state_present)
+  )
+}
 
 
