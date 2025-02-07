@@ -10,14 +10,37 @@
 #' @examples
 #' plot_crags(my_crag_data)
 plot_crags <- function(df) {
+  
+  # Vectorized function to format grades
+  format_grades <- function(grade1, grade2) {
+    ifelse(!is.na(grade2), paste0(grade1, " / ", grade2), grade1)
+  }
+  
+  # Vectorized function to format hardest moves
+  format_moves <- function(move1, move2) {
+    ifelse(!is.na(move2), paste0("(", move1, " / ", move2, ")"),ifelse(!is.na(move1), paste0("(", move1, ")"),""))
+  }
+  
+  
   # Summarize data by crag
   crag_summary <- df |> 
     dplyr::group_by(name_of_area, latitude, longitude) |> 
-    dplyr::summarise(
-      climb_count = dplyr::n(),
-      climbs_list = paste0("<li>", paste(unique(climb_name), collapse = "</li><li>"), "</li>")
-    ) |> 
-    dplyr::ungroup()
+      dplyr::summarise(
+        climb_count = dplyr::n(),
+        climbs_list = paste0(
+          "<li>", 
+          paste(
+            unique(paste0(
+              climb_name, " - ", 
+              format_grades(overall_grade_1, overall_grade_2), " ",
+              format_moves(hardest_move_1, hardest_move_2)
+            )), 
+            collapse = "</li><li>"
+          ), 
+          "</li>"
+        )
+      ) |> 
+        dplyr::ungroup()
   
   # Define color scale
   max_climbs <- max(crag_summary$climb_count, na.rm = TRUE)
@@ -36,7 +59,12 @@ plot_crags <- function(df) {
       weight = 1.2,
       opacity = 0.9,
       stroke = TRUE,
-      popup = ~paste0("<b>", name_of_area, "</b><br><ul>", climbs_list, "</ul>")
+      popup = ~as.character(paste0(
+        "<b>", name_of_area, "</b><br>",
+        "<div style='max-height: 100px; overflow-y: auto; padding:5px; border:1px solid #ccc; background-color:#f9f9f9;'>",
+        "<ul style='margin: 0; padding-left: 20px;'>", climbs_list, "</ul>",
+        "</div>"
+      ))
     ) |> 
     leaflet::addLegend(
       "bottomright",
