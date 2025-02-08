@@ -25,14 +25,14 @@ app_ui <- function() {
                       shiny::helpText("Filtering climbs in this tab affects the crags shown in the `map` tab."),
                       
                       shiny::fluidPage(
-                        fluidRow(
-                          column(3, 
+                        shiny::fluidRow(
+                          shiny::column(3, 
                                  shiny::checkboxGroupInput("grades",
                                                               "Climb Grades",
                                                               choices = c("D", "D+", "VD", "VD+", "S", "S+", "VS", "HVS", "E1", "E2", "E3", "E4", "E5", "E6", "E7"),
                                                               selected = "D"),
                                  shiny::radioButtons("tide_data", "Tide Data Source:", choices = c("Real-world" = "real", "Manual Input" = "manual"))),
-                          column(3, 
+                          shiny::column(3, 
                                  shiny::checkboxGroupInput("hardest_move",
                                                               "Hardest Move",
                                                               choices = c("3c", "4a", "4b", "4c", "5a", "5b", "5c", "6a", "6b", "6c"),
@@ -40,7 +40,7 @@ app_ui <- function() {
                                  shiny::checkboxInput("tide_filter", "Exclude tide-dependent climbs", value = TRUE),
                                  shinyTime::timeInput("start_time", "Climb Start Time:"),
                                  shiny::numericInput("duration", "Climb Duration (hrs):", value = 2, min = 0.5, step = 0.5)),
-                          column(6, )
+                          shiny::column(6, )
                         )
                       )
       ),
