@@ -2,21 +2,35 @@
 % Please edit documentation in R/filter_df.R
 \name{filter_df}
 \alias{filter_df}
-\title{Filter a tibble by a parameter list}
+\title{Filter a Tibble or Data Frame by Multiple Parameters}
 \usage{
 filter_df(df, ...)
 }
 \arguments{
-\item{df}{a dataframe / tibble to filter}
+\item{df}{A tibble or data frame to be filtered.}
 
-\item{...}{A named list, where names are columns of the df and parameter vectors of filter variables.}
+\item{...}{Named arguments where names correspond to column names in \code{df}, and values
+are vectors specifying the allowed values for filtering.}
 }
 \value{
-a filtered tibble / dataframe
+A filtered tibble or data frame.
 }
 \description{
-Filter a tibble by a parameter list
+This function filters a tibble (or data frame) based on multiple criteria, where each
+criterion is a column name mapped to a vector of allowed values. The function retains
+rows where the column values match any of the provided values or are \code{NA} (missing).
+}
+\details{
+This function iteratively applies filtering using \code{purrr::reduce2()}, ensuring that
+multiple filtering conditions are applied sequentially. The function also retains \code{NA} values
+to avoid unintentionally excluding missing data.
 }
 \examples{
-filter_df(mtcars, cyl = 6, gear =c(4,5))
+# Example with mtcars dataset
+filter_df(mtcars, cyl = 6, gear = c(4, 5))
+
+# Example with a tibble
+library(tibble)
+df <- tibble(name = c("Alice", "Bob", "Charlie"), age = c(25, 30, 35), city = c("NY", "LA", "SF"))
+filter_df(df, age = c(25, 30))
 }

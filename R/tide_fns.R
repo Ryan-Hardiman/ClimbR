@@ -3,7 +3,8 @@
 #' @return Web-scraped data from "Seeker.gg" 
 #' @export
 #'
-#' @examples
+#' @examples 
+#' get_tides()
 get_tides <- function(){
   rvest::read_html("https://seeker.gg/Tides") |>
     rvest::html_table() |>
@@ -13,11 +14,13 @@ get_tides <- function(){
     dplyr::mutate(
       time = lubridate::hm(time)|>lubridate::period_to_seconds(),
       height = stringr::str_extract(height,"[\\d\\.]+")|>as.numeric(),
-      dir = ifelse(dir == "▴","up","down")
+      dir = ifelse(dir == "\U25B4", #https://tinyurl.com/yat2s23s : Black up-pointing small triangle
+                   "up","down")
       )
 }
 
-
+#' Interpolate tide points
+#'
 #' @return A tibble with interpolated tide heights for each time step.
 #' @importFrom dplyr mutate
 #' @importFrom tibble tibble
@@ -87,7 +90,6 @@ interpolate_tides <- function(tide_data, time_step = 60) {
 #' # Assuming `df` is a tibble containing climbing route information
 #' filtered_df <- filter_df_by_tide(df, start_time = 16250, duration = 3600)
 #'
-#' @import dplyr
 #' @export
 filter_df_by_tide <- function(df, start_time, duration){
   tides <- get_tides()

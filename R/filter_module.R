@@ -16,8 +16,10 @@
 filterModuleUI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
-    shiny::checkboxGroupInput(ns("grades"), "Grades:", choices = NULL, selected = NULL),
-    shiny::checkboxGroupInput(ns("hardest_moves"), "Hardest Moves:", choices = NULL, selected = NULL)
+    fluidRow(
+      column(6,shiny::checkboxGroupInput(ns("grades"), "Grades:", choices = NULL, selected = NULL)),
+      column(6,shiny::checkboxGroupInput(ns("hardest_moves"), "Hardest Moves:", choices = NULL, selected = NULL))
+    )
   )
 }
 
@@ -43,13 +45,29 @@ filterModuleServer <- function(id, df) {
     # Initialize checkbox group inputs based on unique values in the dataset
     shiny::observe({
       shiny::req(df())
-      shiny::updateCheckboxGroupInput(session, "grades",
-                                      choices = unique(c(df()$overall_grade_1, df()$overall_grade_2)|>purrr::discard(is.na)),
-                                      selected = unique(c(df()$overall_grade_1, df()$overall_grade_2)|>purrr::discard(is.na))
+      
+      trad_order <- c("M", "D", "VD", "HVD", "S", "HS", "VS", "HVS",
+                      "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11")
+      
+      sport_order <- c("3", "4a", "4b", "4c", "5a", "5b", "5c", 
+                       "6a",  "6b", "6c", "7a", "7b",  "7c",  
+                       "8a",  "8b",  "8c", "9a",  "9b",  "9c")
+      
+      grades <- unique(c(df()$overall_grade_1, df()$overall_grade_2)|>purrr::discard(is.na))
+      sort_grades <- intersect(trad_order,grades)
+      
+      moves <- unique(c(df()$hardest_move_1, df()$hardest_move_2)|>purrr::discard(is.na))
+      sort_moves <- intersect(sport_order,moves)
+      
+      shiny::updateCheckboxGroupInput(
+        session, "grades",
+        choices = sort_grades,
+        selected = sort_grades
       )
-      shiny::updateCheckboxGroupInput(session, "hardest_moves",
-                                      choices = unique(c(df()$hardest_move_1, df()$hardest_move_2)|>purrr::discard(is.na)),
-                                      selected = unique(c(df()$hardest_move_1, df()$hardest_move_2)|>purrr::discard(is.na))
+      shiny::updateCheckboxGroupInput(
+        session, "hardest_moves",
+        choices = sort_moves,
+        selected = sort_moves
       )
     })
     

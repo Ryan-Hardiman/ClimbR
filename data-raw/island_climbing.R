@@ -16,6 +16,7 @@ island_climbing <- island_climbing_raw |>
   mutate(climb_grade = str_replace(climb_grade, "^Vs", "VS") |>
            str_replace("^Hs", "HS"),
          tide_height = str_replace(tide_height, "HIgh", "High"),
+         name_of_area = na.locf(name_of_area),
          latitude = na.locf(latitude),
          longitude = na.locf(longitude),
          longitude = if_else(name_of_area == "The Sphinx", -2.673698, as.numeric(longitude))) |>

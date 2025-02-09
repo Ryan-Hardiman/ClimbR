@@ -26,13 +26,25 @@ app_ui <- function() {
                       
                       shiny::fluidPage(
                         shiny::fluidRow(
-                          filterModuleUI("filter_df"),
-                          "####################",
-                          "NOT IMPLEMENTED YET",
-                          shiny::checkboxInput("tide_filter", "Exclude tide-dependent climbs", value = TRUE),
-                          shinyTime::timeInput("start_time", "Climb Start Time:"),
-                          shiny::numericInput("duration", "Climb Duration (hrs):", value = 2, min = 0.5, step = 0.5),
-                          shiny::column(6, )
+                          # Left-hand side (6-column width)
+                          shiny::column(6,
+                                        shiny::fluidRow(              
+                                          filterModuleUI("filter_df") 
+                                        ),
+                                        shiny::fluidRow(
+                                          shiny::column(6, shiny::checkboxInput("tide_filter", "Exclude tide-dependent climbs", value = TRUE)),
+                                          shiny::column(6, shinyTime::timeInput("start_time", "Climb Start Time:"))
+                                        ),
+                                        shiny::fluidRow(
+                                          shiny::column(6, shiny::numericInput("duration", "Climb Duration (hrs):", value = 2, min = 0.5, step = 0.5))
+                                        )
+                          ),
+                          
+                          # Right-hand side (4-column width)
+                          shiny::column(6,
+                                        shiny::helpText("Showing a few of the current selected climbs"),
+                                        DT::DTOutput("glimpse")
+                          )
                         )
                       )
       ),
@@ -70,6 +82,40 @@ app_server <- function(input, output, session, df) {
   
   filtered_dataframe <- filterModuleServer("filter_df", reactive(df))
   
+  output$glimpse <- DT::renderDT({
+    filtered_dataframe()|>
+      
+      dplyr::mutate(
+        trad_grade = ifelse(
+          is.na(overall_grade_2),
+          overall_grade_1,
+          paste(sep="/",overall_grade_1,overall_grade_2)
+        ),
+        sport_grade = ifelse(
+          is.na(hardest_move_2),
+          ifelse(
+            is.na(hardest_move_1),
+            NA,
+            hardest_move_1),
+          paste(sep="/",hardest_move_1,hardest_move_2)
+        ),
+        grade = paste0(
+          trad_grade,
+          ifelse(
+            is.na(sport_grade ),
+            "",
+            paste0(" (",sport_grade,")")
+            )
+          )
+      )|>
+      dplyr::select(
+        name_of_area,
+        climb_name,
+        grade,
+        tide_season,
+        tide_height,
+        wet_time = hours_to_be_inaccessible)
+  })
   
   ####Split into modules asap..
   #Map Page code
@@ -86,6 +132,7 @@ app_server <- function(input, output, session, df) {
   })
   
   output$selected_crag_info <- shiny::renderTable({
+    req(selected_crag())
     selected_crag()|>dplyr::select(climb_name,overall_grade_1,overall_grade_2,hardest_move_1,hardest_move_2)
   })
   
@@ -114,8 +161,9 @@ app_server <- function(input, output, session, df) {
 #' @return Launches the Shiny App
 #' @importFrom shiny shinyApp
 #' @export
-#' @example df <- data.frame(name_of_area = sample(paste0("Crag_",1:5),26,replace = T),climb_name = letters,overall_grade_1 = sample(paste0("E",1:11),26,replace=T),hardest_move_1 = sample(paste0(3:6,c("a","b","c")),26,replace = T))|>dplyr::mutate(overall_grade_2 = overall_grade_1, hardest_move_2 = hardest_move_1)
-#' run_app(df)
+#' @examples
+#'  df <- data.frame(name_of_area = sample(paste0("Crag_",1:5),26,replace = T),climb_name = letters,overall_grade_1 = sample(paste0("E",1:11),26,replace=T),hardest_move_1 = sample(paste0(3:6,c("a","b","c")),26,replace = T))|>dplyr::mutate(overall_grade_2 = overall_grade_1, hardest_move_2 = hardest_move_1)
+#'  run_app(df)
 run_app <- function(df) {
   shiny::shinyApp(
     ui = app_ui(),
