@@ -38,7 +38,8 @@ plot_crags <- function(df) {
             collapse = "</li><li>"
           ), 
           "</li>"
-        )
+        ),
+        .groups = "drop"
       ) |> 
         dplyr::ungroup()
   
@@ -72,5 +73,23 @@ plot_crags <- function(df) {
       values = ~climb_count,
       title = "# Of Climbs",
       opacity = 1
-    )
+    ) |> 
+    htmlwidgets::onRender("
+    function(el, x) {
+      // Find the legend container inside the Leaflet map
+      let legends = el.getElementsByClassName('leaflet-control');
+
+      for (let i = 0; i < legends.length; i++) {
+        let legend = legends[i];
+
+        if (legend.innerHTML.includes('# Of Climbs')) {
+          legend.style.maxHeight = '250px';
+          legend.style.overflowY = 'auto';
+          legend.style.backgroundColor = 'rgba(255, 255, 255, 0.8)'; // Ensure visibility
+          legend.style.padding = '5px';
+          legend.style.border = '1px solid #ccc';
+        }
+      }
+    }
+  ")
 }
