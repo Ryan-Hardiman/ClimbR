@@ -32,7 +32,7 @@ app_ui <- function() {
                                           filterModuleUI("filter_df") 
                                         ),
                                         shiny::fluidRow(
-                                          shiny::column(6, shiny::checkboxInput("tide_filter", "Exclude tide-dependent climbs", value = TRUE)),
+                                          
                                           shiny::column(6, shinyTime::timeInput("start_time", "Climb Start Time:"))
                                         ),
                                         shiny::fluidRow(

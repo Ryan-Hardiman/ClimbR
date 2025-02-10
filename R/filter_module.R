@@ -18,7 +18,10 @@ filterModuleUI <- function(id) {
   shiny::tagList(
     fluidRow(
       column(6,shiny::checkboxGroupInput(ns("grades"), "Grades:", choices = NULL, selected = NULL)),
-      column(6,shiny::checkboxGroupInput(ns("hardest_moves"), "Hardest Moves:", choices = NULL, selected = NULL))
+      column(6,
+             shiny::checkboxGroupInput(ns("hardest_moves"), "Hardest Moves:", choices = NULL, selected = NULL),
+             shiny::checkboxInput(ns("remove_tidal"), "Exclude tide-dependent climbs", value = FALSE)
+             )
     )
   )
 }
@@ -37,9 +40,6 @@ filterModuleUI <- function(id) {
 #'
 #' @export
 #'
-#' @examples 
-#' # Use in the Shiny app server function
-#' filterModuleServer("filter_df", df)
 filterModuleServer <- function(id, df) {
   shiny::moduleServer(id, function(input, output, session) {
     # Initialize checkbox group inputs based on unique values in the dataset
@@ -74,13 +74,20 @@ filterModuleServer <- function(id, df) {
     # Reactive expression to filter the dataset based on selected grades and hardest moves
     filtered_df <- shiny::reactive({
       shiny::req(df())
-      df() |>
-        filter_df(
-          overall_grade_1 = input$grades,
-          overall_grade_2 = input$grades,
-          hardest_move_1 = input$hardest_moves,
-          hardest_move_2 = input$hardest_moves
-        )
+
+      df_filtered <- filter_df(
+        df(),
+        overall_grade_1 = input$grades,
+        overall_grade_2 = input$grades,
+        hardest_move_1 = input$hardest_moves,
+        hardest_move_2 = input$hardest_moves
+      )
+      if (input$remove_tidal) {
+        df_filtered <- subset(df_filtered, tide_height == "All" & tide_season == "All")
+      }
+      
+      df_filtered
+      
     })
     
     # Return the reactive filtered dataframe
