@@ -20,8 +20,16 @@ filterModuleUI <- function(id) {
       column(6,shiny::checkboxGroupInput(ns("grades"), "Grades:", choices = NULL, selected = NULL)),
       column(6,
              shiny::checkboxGroupInput(ns("hardest_moves"), "Hardest Moves:", choices = NULL, selected = NULL),
-             shiny::checkboxInput(ns("remove_tidal"), "Exclude tide-dependent climbs", value = FALSE)
+             shiny::checkboxInput(ns("remove_tidal"), "Non-Tidal Only", value = FALSE),
+             shiny::checkboxInput(ns("remove_wet"), "Remove underwater climbs", value = FALSE)
              )
+    ),
+    
+    shiny::fluidRow(
+      shiny::column(6, shinyTime::timeInput(ns("start_time"), "Climb Start Time:", value = strptime("12:00", "%H:%M")))
+    ),
+    shiny::fluidRow(
+      shiny::column(6, shiny::numericInput(ns("duration"), "Climb Duration (hrs):", value = 2, min = 0.5, step = 0.5))
     )
   )
 }
@@ -75,6 +83,11 @@ filterModuleServer <- function(id, df) {
     filtered_df <- shiny::reactive({
       shiny::req(df())
 
+      start_time <- input$start_time|>
+        substr(12,16)|>
+        lubridate::hm()|>
+        lubridate::period_to_seconds()/3600
+      
       df_filtered <- filter_df(
         df(),
         overall_grade_1 = input$grades,
@@ -82,8 +95,17 @@ filterModuleServer <- function(id, df) {
         hardest_move_1 = input$hardest_moves,
         hardest_move_2 = input$hardest_moves
       )
+      
+      if(input$remove_wet){
+        df_filtered <-  df_filtered|>filter_df_by_tide(start_time, input$duration)
+      }
+      
       if (input$remove_tidal) {
-        df_filtered <- subset(df_filtered, tide_height == "All" & tide_season == "All")
+        df_filtered <- subset(df_filtered, 
+                              (tide_height == "All" & tide_season == "All")|
+                                (tide_height == "High" & tide_season == "All")|
+                                (tide_height == "High" & tide_season == "Spring")
+                                )
       }
       
       df_filtered

@@ -113,7 +113,7 @@ filter_df_by_tide <- function(df, start_time, duration){
   
   df |> dplyr::filter(
     tide_season %in% c("All", season_present),
-    tide_heights %in% c("All", "High", state_present)
+    tide_height %in% c("All", "High", state_present)
   )
 }
 

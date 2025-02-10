@@ -31,13 +31,12 @@ app_ui <- function() {
                                         shiny::fluidRow(              
                                           filterModuleUI("filter_df") 
                                         ),
-                                        shiny::fluidRow(
-                                          
-                                          shiny::column(6, shinyTime::timeInput("start_time", "Climb Start Time:", value = strptime("12:00", "%H:%M")))
-                                        ),
-                                        shiny::fluidRow(
-                                          shiny::column(6, shiny::numericInput("duration", "Climb Duration (hrs):", value = 2, min = 0.5, step = 0.5))
-                                        )
+                                        # shiny::fluidRow(
+                                        #   shiny::column(6, shinyTime::timeInput("start_time", "Climb Start Time:", value = strptime("12:00", "%H:%M")))
+                                        # ),
+                                        # shiny::fluidRow(
+                                        #   shiny::column(6, shiny::numericInput("duration", "Climb Duration (hrs):", value = 2, min = 0.5, step = 0.5))
+                                        # )
                           ),
                           
                           # Right-hand side (4-column width)
@@ -139,16 +138,20 @@ app_server <- function(input, output, session, df) {
   
   # Tide Page (requires internet connection)
   output$tide_plot <- renderPlot({
-    tides <- get_tides() |> interpolate_tides() |> dplyr::mutate(
-      hours = floor(time), 
-      minutes = round((time - hours) * 60),
-      datetime = lubridate::today() + lubridate::hours(hours) + lubridate::minutes(minutes)  # Uses today's date
-    )
+    tides <- get_tides() |> interpolate_tides() |>
+      dplyr::mutate(
+        hours = floor(time), 
+        minutes = round((time - hours) * 60),
+        datetime = lubridate::today() + lubridate::hours(hours) + lubridate::minutes(minutes)  # Uses today's date
+      )
+    
+    # Reference inputs from filterModuleUI using the namespace
+    start_time <- input[[shiny::NS("filter_df","start_time")]]
+    duration <- input[[shiny::NS("filter_df","duration")]]
     
     # Ensure start_time is in the correct format
-    climb_start <- lubridate::today() + lubridate::hours(lubridate::hour(input$start_time)) + 
-      lubridate::minutes(lubridate::minute(input$start_time))
-    climb_end <- climb_start + lubridate::hours(input$duration)
+    climb_start <- lubridate::ymd_hms(start_time)
+    climb_end <- climb_start + lubridate::hours(duration)
     
     # Filter tide data for the climbing period
     climb_tides <- tides |> dplyr::filter(datetime >= climb_start & datetime <= climb_end)
