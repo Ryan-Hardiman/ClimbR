@@ -27,8 +27,3 @@ The function checks tide data, interpolates the tide heights over time, and dete
 is within the acceptable range for climbing, filtering out any routes that are inaccessible based on tide
 height and season.
 }
-\examples{
-# Assuming `df` is a tibble containing climbing route information
-filtered_df <- filter_df_by_tide(df, start_time = 16250, duration = 3600)
-
-}

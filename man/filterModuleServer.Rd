@@ -19,7 +19,3 @@ This server function handles the filtering logic for the climbing routes dataset
 user input (grades and hardest moves). It updates the choices in the filter options and
 generates a reactive filtered dataset.
 }
-\examples{
-# Use in the Shiny app server function
-filterModuleServer("filter_df", df)
-}

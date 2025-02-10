@@ -86,16 +86,13 @@ interpolate_tides <- function(tide_data, time_step = 60) {
 #' @return A filtered tibble or data frame containing only the climbing routes that are accessible during the
 #'   specified time frame, based on tide conditions.
 #'
-#' @examples
-#' # Assuming `df` is a tibble containing climbing route information
-#' filtered_df <- filter_df_by_tide(df, start_time = 16250, duration = 3600)
 #'
 #' @export
 filter_df_by_tide <- function(df, start_time, duration){
   tides <- get_tides()
   
   future_tides <- tides |>
-    interpolate_points() |>
+    interpolate_tides() |>
     dplyr::mutate(
       season = ifelse(height >= 3 & height <=6.5, "All", "Spring"),
       state = dplyr::case_when(

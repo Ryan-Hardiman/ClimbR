@@ -15,6 +15,3 @@ A Leaflet map visualizing crags with markers sized and colored by the number of 
 \description{
 Create an interactive Leaflet map of climbing crags
 }
-\examples{
-plot_crags(my_crag_data)
-}

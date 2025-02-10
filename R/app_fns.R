@@ -33,7 +33,7 @@ app_ui <- function() {
                                         ),
                                         shiny::fluidRow(
                                           
-                                          shiny::column(6, shinyTime::timeInput("start_time", "Climb Start Time:"))
+                                          shiny::column(6, shinyTime::timeInput("start_time", "Climb Start Time:", value = strptime("12:00", "%H:%M")))
                                         ),
                                         shiny::fluidRow(
                                           shiny::column(6, shiny::numericInput("duration", "Climb Duration (hrs):", value = 2, min = 0.5, step = 0.5))
@@ -42,7 +42,7 @@ app_ui <- function() {
                           
                           # Right-hand side (4-column width)
                           shiny::column(6,
-                                        shiny::helpText("Showing a few of the current selected climbs"),
+                                        shiny::helpText("Showing a few of the current selected climbs. Note this doesnt affect the climbs shown in other tabs."),
                                         DT::DTOutput("glimpse")
                           )
                         )
@@ -139,19 +139,30 @@ app_server <- function(input, output, session, df) {
   
   # Tide Page (requires internet connection)
   output$tide_plot <- renderPlot({
-    get_tides()|>
-      interpolate_tides()|>
-      dplyr::mutate(
-        hours = floor(time), 
-        minutes = round((time - hours) * 60),
-        datetime = lubridate::ymd_hms("2025-02-09 00:00:00") + lubridate::hours(hours) + lubridate::minutes(minutes)  # Example date
-      )|>
-      ggplot2::ggplot(ggplot2::aes(x = datetime, y = height))+
-      ggplot2::geom_line()+
-      ggplot2::scale_x_datetime(date_labels = "%I:%M %p", date_breaks = "4 hour") +  # 12-hour format
+    tides <- get_tides() |> interpolate_tides() |> dplyr::mutate(
+      hours = floor(time), 
+      minutes = round((time - hours) * 60),
+      datetime = lubridate::today() + lubridate::hours(hours) + lubridate::minutes(minutes)  # Uses today's date
+    )
+    
+    # Ensure start_time is in the correct format
+    climb_start <- lubridate::today() + lubridate::hours(lubridate::hour(input$start_time)) + 
+      lubridate::minutes(lubridate::minute(input$start_time))
+    climb_end <- climb_start + lubridate::hours(input$duration)
+    
+    # Filter tide data for the climbing period
+    climb_tides <- tides |> dplyr::filter(datetime >= climb_start & datetime <= climb_end)
+    
+    # Plot tide curve with shading for climbing period
+    ggplot2::ggplot(tides, ggplot2::aes(x = datetime, y = height)) +
+      ggplot2::geom_line() +
+      ggplot2::geom_ribbon(data = climb_tides, ggplot2::aes(ymin = 0, ymax = height), fill = "blue", alpha = 0.3) + 
+      ggplot2::scale_x_datetime(date_labels = "%I:%M %p", date_breaks = "4 hour") +  
       ggplot2::labs(x = "Time", y = "Height (m)", title = "Tide Height Over Time") +
       ggplot2::theme_minimal()
-  }, res = 96)
+    
+  
+    }, res = 96)
   
 }
 

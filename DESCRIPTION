@@ -28,5 +28,6 @@ Imports:
     purrr,
     rlang,
     rvest,
-    stringr
+    stringr,
+    DT
     
