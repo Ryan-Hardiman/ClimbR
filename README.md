@@ -1,10 +1,10 @@
 
-# islandclimbing
+# ClimbR
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-{islandclimbing} is a work in progress R package and shiny app to
+{ClimbR} is a work in progress R package and shiny app to
 accompany the book *Guernsey Trad* by James Burton. This app is for
 non-commercial use.
 
